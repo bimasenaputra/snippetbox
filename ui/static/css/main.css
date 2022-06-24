@@ -259,6 +259,16 @@ button:hover {
     float: right;
 }
 
+.sticky {
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+.sticky + main {
+    padding-top: 60px;
+}
+
 div.flash {
     color: #FFFFFF;
     font-weight: bold;
