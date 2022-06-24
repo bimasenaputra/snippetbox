@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"snippetbox.bimasenaputra/internal/models"
@@ -15,7 +16,7 @@ import (
 type application struct {
 	errorLog *log.Logger
 	infoLog *log.Logger
-	snippets *models.SnippetModel
+	snippets models.SnippetModelInterface
 	templateCache map[string]*template.Template
 }
 
@@ -53,6 +54,9 @@ func main() {
 		Addr: *addr,
 		ErrorLog: errorLog,
 		Handler: app.routes(),
+		IdleTimeout: time.Minute,
+		ReadTimeout: 5 * time.Minute,
+		WriteTimeout: 10 * time.Minute,
 	}
 	err = server.ListenAndServe()
 	errorLog.Fatal(err)
