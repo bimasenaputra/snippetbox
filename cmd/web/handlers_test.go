@@ -163,3 +163,59 @@ func TestSnippetCreatePost(t *testing.T) {
 		})
 	}
 }
+
+func TestSnippetLatest(t *testing.T) {
+	app := newTestApplication(t)
+
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := [] struct {
+		name string
+		path string
+		expected int
+	} {
+		{
+			name: "Previous Snippets With ID",
+			path: "/snippets/latest?direction=prev&id=0",
+			expected: http.StatusOK,	
+		},
+		{
+			name: "Previous Snippets Without ID",
+			path: "/snippets/latest?direction=prev",
+			expected: http.StatusBadRequest,
+		},
+		{
+			name: "Next Snippets With ID",
+			path: "/snippets/latest?direction=next&id=2",
+			expected: http.StatusOK,
+		},
+		{
+			name: "Next Snippets Without ID",
+			path: "/snippets/latest?direction=next",
+			expected: http.StatusBadRequest,
+		},
+		{
+			name: "Invalid Direction",
+			path: "/snippets/latest?direction=mid",
+			expected: http.StatusBadRequest,
+		},
+		{
+			name: "Just ID",
+			path: "/snippets/latest?id=0",
+			expected: http.StatusBadRequest,
+		},
+		{
+			name: "No Query Parameter",
+			path: "/snippets/latest",
+			expected: http.StatusBadRequest,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			code, _, _ := ts.get(t, test.path)
+			assert.Equal(t, code, test.expected)
+		})
+	}
+}

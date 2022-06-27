@@ -32,3 +32,9 @@ func TestHumanDate(t *testing.T) {
 		})
 	}
 }
+
+func TestAdd(t *testing.T) {
+	actual := add(1, 2)
+	expected := 3
+	assert.Equal(t, actual, expected)
+}

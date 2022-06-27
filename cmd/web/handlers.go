@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/julienschmidt/httprouter"
 	"snippetbox.bimasenaputra/internal/validator"
@@ -18,8 +19,16 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	minId, err := app.snippets.GetMinID()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
 	templateData := &templateData {
 		Snippets: snippets,
+		HasPrev: false,
+		HasNext: snippets[len(snippets)-1].ID != minId,
 	}
 
 	app.render(w, "home.html", http.StatusOK, templateData)
@@ -101,4 +110,75 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
+}
+
+func (app *application) snippetLatest(w http.ResponseWriter, r *http.Request) {
+	opt := r.URL.Query().Get("direction")
+	if strings.TrimSpace(opt) == "" {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	if opt == "next" {
+		snippets, err := app.snippets.NextLatestPaging(id)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		minId, err := app.snippets.GetMinID()
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		maxId, err := app.snippets.GetMaxID()
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		templateData := &templateData{
+			Snippets: snippets,
+			HasNext: snippets[len(snippets)-1].ID != minId,
+			HasPrev: snippets[0].ID != maxId,
+		}
+
+		app.render(w, "snippets.html", http.StatusOK, templateData)
+	} else if opt == "prev" {
+		snippets, err := app.snippets.PrevLatestPaging(id)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		minId, err := app.snippets.GetMinID()
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		maxId, err := app.snippets.GetMaxID()
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		templateData := &templateData{
+			Snippets: snippets,
+			HasNext: snippets[len(snippets)-1].ID != minId,
+			HasPrev: snippets[0].ID != maxId,
+		}
+
+		app.render(w, "snippets.html", http.StatusOK, templateData)
+	} else {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
 }

@@ -33,3 +33,19 @@ func (m *SnippetModel) Get(id int) (*models.Snippet, error) {
 func (m *SnippetModel) Latest() ([]*models.Snippet, error) {
 	return []*models.Snippet{mockSnippet}, nil
 }
+
+func (m *SnippetModel) GetMaxID() (int, error) {
+	return 1, nil
+}
+
+func (m *SnippetModel) GetMinID() (int, error) {
+	return 1, nil
+}
+
+func (m *SnippetModel) NextLatestPaging(id int) ([]*models.Snippet, error) {
+	return []*models.Snippet{mockSnippet}, nil
+}
+
+func (m *SnippetModel) PrevLatestPaging(id int) ([]*models.Snippet, error) {
+	return []*models.Snippet{mockSnippet}, nil
+}
