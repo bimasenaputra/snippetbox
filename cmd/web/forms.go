@@ -10,3 +10,8 @@ type createSnippetForm struct {
 	Expires int
 	validator.Validator
 }
+
+type searchForm struct {
+	Query string
+	validator.Validator
+}

@@ -43,9 +43,74 @@ func (m *SnippetModel) GetMinID() (int, error) {
 }
 
 func (m *SnippetModel) NextLatestPaging(id int) ([]*models.Snippet, error) {
-	return []*models.Snippet{mockSnippet}, nil
+	switch id {
+	case 2:
+		return []*models.Snippet{mockSnippet}, nil
+	default:
+		return nil, nil
+	}
 }
 
 func (m *SnippetModel) PrevLatestPaging(id int) ([]*models.Snippet, error) {
-	return []*models.Snippet{mockSnippet}, nil
+	switch id {
+	case 0:
+		return []*models.Snippet{mockSnippet}, nil
+	default:
+		return nil, nil
+	}
+}
+
+func (m *SnippetModel) LatestContainsTitle(title string) ([]*models.Snippet, error) {
+	switch title {
+	case "Old":
+		return []*models.Snippet{mockSnippet}, nil
+	default:
+		return nil, nil
+	}
+}
+
+func (m *SnippetModel) GetMaxIDByTitle(title string) (int, error) {
+	switch title {
+	case "Old":
+		return 1, nil
+	default:
+		return 0, nil
+	}
+}
+
+func (m *SnippetModel) GetMinIDByTitle(title string) (int, error) {
+	switch title {
+	case "Old":
+		return 1, nil
+	default:
+		return 0, nil
+	}
+}
+
+func (m *SnippetModel) NextLatestContainsTitle(id int, title string) ([]*models.Snippet, error) {
+	switch id {
+	case 2:
+		switch title {
+		case "Old":
+			return []*models.Snippet{mockSnippet}, nil
+		default:
+			return nil, nil
+		}
+	default:
+		return nil, nil
+	}
+}
+
+func (m *SnippetModel) PrevLatestContainsTitle(id int, title string) ([]*models.Snippet, error) {
+	switch id {
+	case 0:
+		switch title {
+		case "Old":
+			return []*models.Snippet{mockSnippet}, nil
+		default:
+			return nil, nil
+		}
+	default:
+		return nil, nil
+	}
 }

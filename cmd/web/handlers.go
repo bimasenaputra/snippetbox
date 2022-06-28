@@ -179,6 +179,151 @@ func (app *application) snippetLatest(w http.ResponseWriter, r *http.Request) {
 		app.render(w, "snippets.html", http.StatusOK, templateData)
 	} else {
 		app.clientError(w, http.StatusBadRequest)
+	}
+}
+
+func (app *application) snippetSearch(w http.ResponseWriter, r *http.Request) {
+	query := r.URL.Query().Get("q")
+	if strings.TrimSpace(query) == "" {
+		templateData := &templateData{
+			Form: &searchForm {
+				Query: "",
+			},
+		}
+		app.render(w, "search.html", http.StatusOK, templateData)
 		return
 	}
+
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if strings.TrimSpace(r.URL.Query().Get("id")) != "" && err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	direction := r.URL.Query().Get("direction")
+	
+	if id == 0 || strings.TrimSpace(direction) == "" {
+		snippets, err := app.snippets.LatestContainsTitle(query)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		if len(snippets) == 0 {
+			templateData := &templateData{
+				Snippets: snippets,
+				Form: &searchForm {
+					Query: query,
+				},
+			}
+			app.render(w, "search.html", http.StatusOK, templateData)
+			return
+		}
+
+		minId, err := app.snippets.GetMinIDByTitle(query)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		templateData := &templateData{
+			Snippets: snippets,
+			Form: &searchForm {
+				Query: query,
+			},
+			HasPrev: false,
+			HasNext: snippets[len(snippets)-1].ID != minId,
+		}
+
+		app.render(w, "search.html", http.StatusOK, templateData)
+		return
+	}
+
+	if direction == "next" {
+		minId, err := app.snippets.GetMinIDByTitle(query)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		maxId, err := app.snippets.GetMaxIDByTitle(query)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		snippets, err := app.snippets.NextLatestContainsTitle(id, query)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		templateData := &templateData{
+			Snippets: snippets,
+			Form: &searchForm {
+				Query: query,
+			},
+			HasPrev: snippets[0].ID != maxId,
+			HasNext: snippets[len(snippets)-1].ID != minId,
+		}
+
+		app.render(w, "snippets.html", http.StatusOK, templateData)
+	} else if direction == "prev" {
+		minId, err := app.snippets.GetMinIDByTitle(query)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		maxId, err := app.snippets.GetMaxIDByTitle(query)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		snippets, err := app.snippets.PrevLatestContainsTitle(id, query)
+		if err != nil {
+			app.serverError(w, err)
+			return
+		}
+
+		templateData := &templateData{
+			Snippets: snippets,
+			Form: &searchForm {
+				Query: query,
+			},
+			HasPrev: snippets[0].ID != maxId,
+			HasNext: snippets[len(snippets)-1].ID != minId,
+		}
+
+		app.render(w, "snippets.html", http.StatusOK, templateData)
+	} else {
+		app.clientError(w, http.StatusBadRequest)
+	}
+}
+
+func (app *application) snippetSearchPost(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 4096)
+
+	err := r.ParseForm()
+	if err != nil {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	form := &searchForm{
+		Query: r.PostForm.Get("query"),
+	}
+
+	form.CheckField(validator.NotBlank(form.Query), "query", "This field cannot be blank")
+
+	if !form.Valid() {
+		templateData := &templateData {
+			Form: form,
+		}
+		app.render(w, "search.html", http.StatusUnprocessableEntity, templateData)
+		return
+	}
+
+	http.Redirect(w, r, fmt.Sprintf("/snippets/search?q=%s", form.Query), http.StatusSeeOther)
 }

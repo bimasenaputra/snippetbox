@@ -21,6 +21,8 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/snippet/create", app.snippetCreate)
 	router.HandlerFunc(http.MethodPost, "/snippet/create", app.snippetCreatePost)
 	router.HandlerFunc(http.MethodGet, "/snippets/latest", app.snippetLatest)
+	router.HandlerFunc(http.MethodGet, "/snippets/search", app.snippetSearch)
+	router.HandlerFunc(http.MethodPost, "/snippets/search", app.snippetSearchPost)
 	
 	return app.recoverPanic(app.logRequest(secureHeaders(app.rateLimiter(router))))
 }

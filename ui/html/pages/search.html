@@ -1,0 +1,45 @@
+{{define "javascript"}}
+<script src="https://unpkg.com/htmx.org@1.7.0"></script>
+<script src="/static/js/config.js"></script>
+{{end}}
+
+{{define "title"}}Search{{end}}
+
+{{define "main"}}
+    <form class='search' action='/snippets/search' method='POST'>
+        {{with .Form.FieldErrors.query}}
+        <label class='error'>{{.}}</label>
+        {{end}}
+        <input type='text' class='search-term' placeholder='What are you looking for?' name='query' value='{{.Form.Query}}'>
+        <button type='submit' class='search-button'>&#128269;</button>
+    </form>
+    {{with .Form.Query}}
+    <p>Showing result for: {{.}}</p>
+    {{end}}
+    {{if .Snippets}}
+    <div id='response-div'>
+        <table>
+            <tr>
+                <th>Title</th>
+                <th>Created</th>
+                <th>ID</th>
+            </tr>
+            {{range .Snippets}}
+            <tr>
+                <td><a href='/snippet/view/{{.ID}}'>{{.Title}}</a></td>
+                <td>{{humanDate .Created}}</td>
+                <td>#{{.ID}}</td>
+            </tr>
+            {{end}}
+        </table>
+        {{if .HasPrev}}
+        <a hx-get='/snippets/search?q={{.Query}}&direction=prev&id={{(index .Snippets 0).ID}}' hx-target='#response-div' hx-trigger='click' href='#' class='button float-left'>&laquo; Previous</a>
+        {{end}}
+        {{if .HasNext}}
+        <a hx-get='/snippets/search?q={{.Query}}direction=next&id={{(index .Snippets (add (len .Snippets) -1)).ID}}' hx-target='#response-div' hx-trigger='click' href='#' class='button float-right'>Next &raquo;</a>
+        {{end}}
+    </div>
+    {{else}}
+        <p>There's nothing to see here... yet!</p>
+    {{end}}
+{{end}}

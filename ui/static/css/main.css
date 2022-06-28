@@ -276,6 +276,34 @@ button:hover {
     float: right
 }
 
+.search {
+    width: 100%;
+    margin-bottom: 36px;
+    display: flex;
+}
+
+.search-term {
+    width: 100%;
+    border: 3px solid #4EB722;
+    border-right: none;
+    padding: 5px;
+    height: 20px;
+    border-radius: 5px 0 0 5px;
+    outline: none;
+}
+
+.search-button {
+    width: 40px;
+    height: 30px;
+    border: 1px solid #4EB722;
+    background: #4EB722;
+    text-align: center;
+    color: #fff;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    font-size: 20px;
+}
+
 div.flash {
     color: #FFFFFF;
     font-weight: bold;

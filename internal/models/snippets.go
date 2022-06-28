@@ -22,6 +22,11 @@ type SnippetModelInterface interface {
 	GetMinID() (int, error)
 	NextLatestPaging(int) ([]*Snippet, error)
 	PrevLatestPaging(int) ([]*Snippet, error)
+	LatestContainsTitle(string) ([]*Snippet, error)
+	GetMaxIDByTitle(string) (int, error)
+	GetMinIDByTitle(string) (int, error)
+	NextLatestContainsTitle(int, string) ([]*Snippet, error)
+	PrevLatestContainsTitle(int, string) ([]*Snippet, error)  
 }
 
 type SnippetModel struct {
@@ -168,6 +173,130 @@ func (m *SnippetModel) PrevLatestPaging(id int) ([]*Snippet, error) {
 	ORDER BY id DESC LIMIT 10`
 
 	result, err := m.DB.Query(stmt, id)
+	if err != nil {
+		return nil, err
+	}
+
+	defer result.Close()
+
+	snippets := []*Snippet{}
+
+	for result.Next() {
+		s := &Snippet{}
+
+		err := result.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+
+		snippets = append(snippets, s)
+	}
+
+	if err = result.Err(); err != nil {
+		return nil, err
+	}
+
+	return snippets, nil
+}
+
+func (m *SnippetModel) LatestContainsTitle(title string) ([]*Snippet, error) {
+	stmt := `SELECT * FROM SNIPPETS
+	WHERE expires > UTC_TIMESTAMP() AND MATCH(title) AGAINST(?)
+	ORDER BY id DESC LIMIT 10`
+
+	result, err := m.DB.Query(stmt, title)
+	if err != nil {
+		return nil, err
+	}
+
+	defer result.Close()
+
+	snippets := []*Snippet{}
+
+	for result.Next() {
+		s := &Snippet{}
+
+		err := result.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+
+		snippets = append(snippets, s)
+	}
+
+	if err = result.Err(); err != nil {
+		return nil, err
+	}
+
+	return snippets, nil
+}
+
+func (m *SnippetModel) GetMaxIDByTitle(title string) (int, error) {
+	stmt := `SELECT MAX(id) FROM SNIPPETS
+	WHERE expires > UTC_TIMESTAMP() AND MATCH(title) AGAINST(?)`
+
+	var id *int
+
+	err := m.DB.QueryRow(stmt, title).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return *id, err
+}
+
+func (m *SnippetModel) GetMinIDByTitle(title string) (int, error) {
+	stmt := `SELECT MIN(id) FROM SNIPPETS
+	WHERE expires > UTC_TIMESTAMP() AND MATCH(title) AGAINST(?)`
+
+	var id *int
+
+	err := m.DB.QueryRow(stmt, title).Scan(&id)
+	if err != nil {
+		return 0, err
+	}
+
+	return *id, err
+}
+
+func (m *SnippetModel) NextLatestContainsTitle(id int, title string) ([]*Snippet, error) {
+	stmt := `SELECT * FROM SNIPPETS
+	WHERE id < ? AND expires > UTC_TIMESTAMP() AND MATCH(title) AGAINST(?)
+	ORDER BY id DESC LIMIT 10`
+
+	result, err := m.DB.Query(stmt, id, title)
+	if err != nil {
+		return nil, err
+	}
+
+	defer result.Close()
+
+	snippets := []*Snippet{}
+
+	for result.Next() {
+		s := &Snippet{}
+
+		err := result.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		if err != nil {
+			return nil, err
+		}
+
+		snippets = append(snippets, s)
+	}
+
+	if err = result.Err(); err != nil {
+		return nil, err
+	}
+
+	return snippets, nil
+}
+
+func (m *SnippetModel) PrevLatestContainsTitle(id int, title string) ([]*Snippet, error) {
+	stmt := `SELECT * FROM SNIPPETS
+	WHERE id > ? AND expires > UTC_TIMESTAMP() AND MATCH(title) AGAINST(?)
+	ORDER BY id DESC LIMIT 10`
+
+	result, err := m.DB.Query(stmt, id, title)
 	if err != nil {
 		return nil, err
 	}

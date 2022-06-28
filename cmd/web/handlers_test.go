@@ -170,7 +170,7 @@ func TestSnippetLatest(t *testing.T) {
 	ts := newTestServer(t, app.routes())
 	defer ts.Close()
 
-	tests := [] struct {
+	tests := []struct {
 		name string
 		path string
 		expected int
@@ -215,6 +215,104 @@ func TestSnippetLatest(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			code, _, _ := ts.get(t, test.path)
+			assert.Equal(t, code, test.expected)
+		})
+	}
+}
+
+func TestSnippetSearch(t *testing.T) {
+	app := newTestApplication(t)
+
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	tests := []struct {
+		name string
+		path string
+		expected int
+	} {
+		{
+			name: "No Parameter",
+			path: "/snippets/search",
+			expected: http.StatusOK,
+		},
+		{
+			name: "Invalid ID",
+			path: "/snippets/search?q=Old&id=id",
+			expected: http.StatusBadRequest,
+		},
+		{
+			name: "Invalid Direction",
+			path: "/snippets/search?q=Old&direction=mid&id=2",
+			expected: http.StatusBadRequest,
+		},
+		{
+			name: "Empty Result",
+			path: "/snippets/search?q=q",
+			expected: http.StatusOK,
+		},
+		{
+			name: "Next Snippets",
+			path: "/snippets/search?q=Old&direction=next&id=2",
+			expected: http.StatusOK,
+		},
+		{
+			name: "Prev Snippets",
+			path: "/snippets/search?q=Old&direction=prev&id=0",
+			expected: http.StatusOK,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			code, _, _ := ts.get(t, test.path)
+			assert.Equal(t, code, test.expected)
+		})
+	}
+}
+
+func TestSnippetSeachPost(t *testing.T) {
+	app := newTestApplication(t)
+
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	param := url.Values{}
+
+	param.Set("query", "")
+	payload1 := bytes.NewBufferString(param.Encode())
+
+	param.Set("query", "query")
+	payload2 := bytes.NewBufferString(param.Encode())
+
+	param.Set("query", "Old")
+	payload3 := bytes.NewBufferString(param.Encode())
+
+	tests := []struct {
+		name string
+		payload *bytes.Buffer
+		expected int
+	} {
+		{
+			name: "Empty Query",
+			payload: payload1,
+			expected: http.StatusUnprocessableEntity,
+		},
+		{
+			name: "Non-empty Query Without Result",
+			payload: payload2,
+			expected: http.StatusOK,
+		},
+		{
+			name: "Non-empty Query With Result",
+			payload: payload3,
+			expected: http.StatusOK,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			code, _, _ := ts.post(t, "/snippets/search", test.payload)
 			assert.Equal(t, code, test.expected)
 		})
 	}
