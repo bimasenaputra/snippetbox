@@ -34,10 +34,10 @@
             {{end}}
         </table>
         {{if .HasPrev}}
-        <a hx-get='/snippets/search?q={{.Query}}&direction=prev&id={{(index .Snippets 0).ID}}' hx-target='#response-div' hx-trigger='click' href='#' class='button float-left'>&laquo; Previous</a>
+        <a hx-get='/snippets/search?q={{.Form.Query}}&direction=prev&id={{(index .Snippets 0).ID}}' hx-target='#response-div' hx-trigger='click' href='#' class='button float-left'>&laquo; Previous</a>
         {{end}}
         {{if .HasNext}}
-        <a hx-get='/snippets/search?q={{.Query}}direction=next&id={{(index .Snippets (add (len .Snippets) -1)).ID}}' hx-target='#response-div' hx-trigger='click' href='#' class='button float-right'>Next &raquo;</a>
+        <a hx-get='/snippets/search?q={{.Form.Query}}&direction=next&id={{(index .Snippets (add (len .Snippets) -1)).ID}}' hx-target='#response-div' hx-trigger='click' href='#' class='button float-right'>Next &raquo;</a>
         {{end}}
     </div>
     {{else}}

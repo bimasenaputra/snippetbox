@@ -150,7 +150,7 @@ func (app *application) snippetLatest(w http.ResponseWriter, r *http.Request) {
 			HasPrev: snippets[0].ID != maxId,
 		}
 
-		app.render(w, "snippets.html", http.StatusOK, templateData)
+		app.render(w, "snippets_home.html", http.StatusOK, templateData)
 	} else if opt == "prev" {
 		snippets, err := app.snippets.PrevLatestPaging(id)
 		if err != nil {
@@ -176,7 +176,7 @@ func (app *application) snippetLatest(w http.ResponseWriter, r *http.Request) {
 			HasPrev: snippets[0].ID != maxId,
 		}
 
-		app.render(w, "snippets.html", http.StatusOK, templateData)
+		app.render(w, "snippets_home.html", http.StatusOK, templateData)
 	} else {
 		app.clientError(w, http.StatusBadRequest)
 	}
@@ -267,7 +267,7 @@ func (app *application) snippetSearch(w http.ResponseWriter, r *http.Request) {
 			HasNext: snippets[len(snippets)-1].ID != minId,
 		}
 
-		app.render(w, "snippets.html", http.StatusOK, templateData)
+		app.render(w, "snippets_search.html", http.StatusOK, templateData)
 	} else if direction == "prev" {
 		minId, err := app.snippets.GetMinIDByTitle(query)
 		if err != nil {
@@ -296,7 +296,7 @@ func (app *application) snippetSearch(w http.ResponseWriter, r *http.Request) {
 			HasNext: snippets[len(snippets)-1].ID != minId,
 		}
 
-		app.render(w, "snippets.html", http.StatusOK, templateData)
+		app.render(w, "snippets_search.html", http.StatusOK, templateData)
 	} else {
 		app.clientError(w, http.StatusBadRequest)
 	}
