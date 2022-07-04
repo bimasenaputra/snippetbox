@@ -6,12 +6,13 @@
 {{define "title"}}Search{{end}}
 
 {{define "main"}}
-    <form class='search' action='/snippets/search' method='POST'>
-        {{with .Form.FieldErrors.query}}
-        <label class='error'>{{.}}</label>
-        {{end}}
-        <input type='text' class='search-term' placeholder='What are you looking for?' name='query' value='{{.Form.Query}}'>
-        <button type='submit' class='search-button'>&#128269;</button>
+    <form action='/snippets/search' method='POST'>
+        <div>
+            {{with .Form.FieldErrors.query}}
+            <label class='error'>{{.}}</label>
+            {{end}}
+            <input type='text' placeholder='What are you looking for?' name='query' value='{{.Form.Query}}'>
+        </div>
     </form>
     {{with .Form.Query}}
     <p>Showing result for: {{.}}</p>
