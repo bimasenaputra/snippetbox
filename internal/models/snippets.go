@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"time"
+	"snippetbox.bimasenaputra/internal/util"
 )
 
 type Snippet struct {
@@ -170,7 +171,7 @@ func (m *SnippetModel) NextLatestPaging(id int) ([]*Snippet, error) {
 func (m *SnippetModel) PrevLatestPaging(id int) ([]*Snippet, error) {
 	stmt := `SELECT * FROM SNIPPETS
 	WHERE id > ? AND expires > UTC_TIMESTAMP()
-	ORDER BY id DESC LIMIT 10`
+	ORDER BY id LIMIT 10`
 
 	result, err := m.DB.Query(stmt, id)
 	if err != nil {
@@ -195,6 +196,8 @@ func (m *SnippetModel) PrevLatestPaging(id int) ([]*Snippet, error) {
 	if err = result.Err(); err != nil {
 		return nil, err
 	}
+
+	util.Reverse(snippets)
 
 	return snippets, nil
 }
@@ -298,7 +301,7 @@ func (m *SnippetModel) NextLatestContainsTitle(id int, title string) ([]*Snippet
 func (m *SnippetModel) PrevLatestContainsTitle(id int, title string) ([]*Snippet, error) {
 	stmt := `SELECT * FROM SNIPPETS
 	WHERE id > ? AND expires > UTC_TIMESTAMP() AND MATCH(title) AGAINST(?)
-	ORDER BY id DESC LIMIT 10`
+	ORDER BY id LIMIT 10`
 
 	result, err := m.DB.Query(stmt, id, title)
 	if err != nil {
@@ -323,6 +326,8 @@ func (m *SnippetModel) PrevLatestContainsTitle(id int, title string) ([]*Snippet
 	if err = result.Err(); err != nil {
 		return nil, err
 	}
+
+	util.Reverse(snippets)
 
 	return snippets, nil
 }
