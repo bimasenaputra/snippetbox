@@ -240,6 +240,8 @@ func (m *SnippetModel) GetMaxIDByTitle(title string) (int, error) {
 	err := m.DB.QueryRow(stmt, title).Scan(&id)
 	if err != nil {
 		return 0, err
+	} else if id == nil {
+		return 0, ErrNoRecord
 	}
 
 	return *id, err
@@ -254,6 +256,8 @@ func (m *SnippetModel) GetMinIDByTitle(title string) (int, error) {
 	err := m.DB.QueryRow(stmt, title).Scan(&id)
 	if err != nil {
 		return 0, err
+	} else if id == nil {
+		return 0, ErrNoRecord
 	}
 
 	return *id, err

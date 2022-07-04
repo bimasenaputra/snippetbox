@@ -1,12 +1,15 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"html/template"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -58,6 +61,22 @@ func main() {
 		ReadTimeout: 5 * time.Minute,
 		WriteTimeout: 10 * time.Minute,
 	}
+
+	shutdownErr := make(chan error)
+
+	go func() {
+		quit := make(chan os.Signal, 1)
+		signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+		s := <-quit
+
+		errorLog.Println(s)
+		
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+		defer cancel()
+
+		shutdownErr <- server.Shutdown(ctx)
+	}()
+
 	err = server.ListenAndServe()
 	errorLog.Fatal(err)
 }
